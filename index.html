@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bonus Betting Calculator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>Bonus Betting Calculator</h1>
+      <p class="subtitle">Work out optimal lay stakes and locked-in profit for bookmaker bonus offers.</p>
+    </header>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="qualifying" role="tab" aria-selected="true">Qualifying Bet</button>
+      <button class="tab" data-tab="freebet-snr" role="tab" aria-selected="false">Free Bet (SNR)</button>
+      <button class="tab" data-tab="freebet-sr" role="tab" aria-selected="false">Free Bet (SR)</button>
+      <button class="tab" data-tab="riskfree" role="tab" aria-selected="false">Risk-Free Bet</button>
+    </nav>
+
+    <section class="panel active" id="qualifying" role="tabpanel">
+      <h2>Qualifying Bet</h2>
+      <p class="hint">Use this for the bet you place to unlock a bonus. Both outcomes leave you with a small loss (the qualifying loss).</p>
+      <div class="grid">
+        <label>Back stake ($)
+          <input type="number" id="q-back-stake" step="0.01" min="0" value="50" />
+        </label>
+        <label>Back odds (decimal)
+          <input type="number" id="q-back-odds" step="0.01" min="1.01" value="2.10" />
+        </label>
+        <label>Lay odds (decimal)
+          <input type="number" id="q-lay-odds" step="0.01" min="1.01" value="2.18" />
+        </label>
+        <label>Exchange commission (%)
+          <input type="number" id="q-commission" step="0.1" min="0" max="100" value="5" />
+        </label>
+      </div>
+      <div class="results" id="q-results"></div>
+    </section>
+
+    <section class="panel" id="freebet-snr" role="tabpanel">
+      <h2>Free Bet — Stake Not Returned (SNR)</h2>
+      <p class="hint">The most common free bet type. Your stake is not returned in winnings — only the profit is paid.</p>
+      <div class="grid">
+        <label>Free bet amount ($)
+          <input type="number" id="snr-stake" step="0.01" min="0" value="25" />
+        </label>
+        <label>Back odds (decimal)
+          <input type="number" id="snr-back-odds" step="0.01" min="1.01" value="5.00" />
+        </label>
+        <label>Lay odds (decimal)
+          <input type="number" id="snr-lay-odds" step="0.01" min="1.01" value="5.20" />
+        </label>
+        <label>Exchange commission (%)
+          <input type="number" id="snr-commission" step="0.1" min="0" max="100" value="5" />
+        </label>
+      </div>
+      <div class="results" id="snr-results"></div>
+    </section>
+
+    <section class="panel" id="freebet-sr" role="tabpanel">
+      <h2>Free Bet — Stake Returned (SR)</h2>
+      <p class="hint">Less common. Your stake is included in the winnings if the bet wins.</p>
+      <div class="grid">
+        <label>Free bet amount ($)
+          <input type="number" id="sr-stake" step="0.01" min="0" value="25" />
+        </label>
+        <label>Back odds (decimal)
+          <input type="number" id="sr-back-odds" step="0.01" min="1.01" value="3.00" />
+        </label>
+        <label>Lay odds (decimal)
+          <input type="number" id="sr-lay-odds" step="0.01" min="1.01" value="3.10" />
+        </label>
+        <label>Exchange commission (%)
+          <input type="number" id="sr-commission" step="0.1" min="0" max="100" value="5" />
+        </label>
+      </div>
+      <div class="results" id="sr-results"></div>
+    </section>
+
+    <section class="panel" id="riskfree" role="tabpanel">
+      <h2>Risk-Free Bet</h2>
+      <p class="hint">Bookmaker refunds your stake (cash or free bet) if the bet loses. Enter the expected value of the refund per dollar.</p>
+      <div class="grid">
+        <label>Stake ($)
+          <input type="number" id="rf-stake" step="0.01" min="0" value="100" />
+        </label>
+        <label>Back odds (decimal)
+          <input type="number" id="rf-back-odds" step="0.01" min="1.01" value="2.50" />
+        </label>
+        <label>Lay odds (decimal)
+          <input type="number" id="rf-lay-odds" step="0.01" min="1.01" value="2.60" />
+        </label>
+        <label>Exchange commission (%)
+          <input type="number" id="rf-commission" step="0.1" min="0" max="100" value="5" />
+        </label>
+        <label>Refund retention rate (0–1)
+          <input type="number" id="rf-retention" step="0.01" min="0" max="1" value="0.70" />
+          <span class="micro">e.g. 1.0 if cash refund, ~0.7 if free bet (SNR)</span>
+        </label>
+      </div>
+      <div class="results" id="rf-results"></div>
+    </section>
+
+    <footer class="footer">
+      <p>All calculations update live. Decimal odds only. Commission applies to exchange winnings.</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
