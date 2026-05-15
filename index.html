@@ -15,23 +15,12 @@
   <main class="app">
     <header class="header">
       <h1 data-text="BONUS//BETTING_CALC">BONUS//BETTING_CALC</h1>
-      <p class="subtitle">&gt; Optimal lay stakes and locked-in profit for bookmaker bonus offers_</p>
+      <p class="subtitle">&gt; Optimal stakes and locked-in profit for bookmaker offers_</p>
     </header>
-
-    <div class="toolbar">
-      <span class="toolbar-label">ROUND LAY ::</span>
-      <div class="round-toggle" role="radiogroup" aria-label="Rounding mode">
-        <button class="round-btn" data-round="up" role="radio" aria-checked="false">▲ Up</button>
-        <button class="round-btn active" data-round="nearest" role="radio" aria-checked="true">◆ Nearest</button>
-        <button class="round-btn" data-round="down" role="radio" aria-checked="false">▼ Down</button>
-        <button class="round-btn" data-round="none" role="radio" aria-checked="false">∞ Exact</button>
-      </div>
-    </div>
 
     <nav class="tabs" role="tablist">
       <button class="tab active" data-tab="qualifying" role="tab" aria-selected="true">Qualifying</button>
-      <button class="tab" data-tab="freebet-snr" role="tab" aria-selected="false">Free Bet · SNR</button>
-      <button class="tab" data-tab="freebet-sr" role="tab" aria-selected="false">Free Bet · SR</button>
+      <button class="tab" data-tab="arbitrage" role="tab" aria-selected="false">Arbitrage</button>
       <button class="tab" data-tab="riskfree" role="tab" aria-selected="false">Risk-Free</button>
     </nav>
 
@@ -55,44 +44,21 @@
       <div class="results" id="q-results"></div>
     </section>
 
-    <section class="panel" id="freebet-snr" role="tabpanel">
-      <h2>// Free Bet — Stake Not Returned</h2>
-      <p class="hint">The most common free bet type. Stake is not returned in winnings — only the profit is paid.</p>
+    <section class="panel" id="arbitrage" role="tabpanel">
+      <h2>// Arbitrage</h2>
+      <p class="hint">Two-way back/back arbitrage across bookmakers. Enter total stake and the odds on each opposing outcome. If the market is mispriced, the calculator finds the stake split that locks in profit.</p>
       <div class="grid">
-        <label>Free bet amount ($)
-          <input type="number" inputmode="decimal" id="snr-stake" step="0.01" min="0" value="25" />
+        <label>Total stake ($)
+          <input type="number" inputmode="decimal" id="arb-total" step="0.01" min="0" value="100" />
         </label>
-        <label>Back odds (decimal)
-          <input type="number" inputmode="decimal" id="snr-back-odds" step="0.01" min="1.01" value="5.00" />
+        <label>Outcome A odds (decimal)
+          <input type="number" inputmode="decimal" id="arb-odds-a" step="0.01" min="1.01" value="2.10" />
         </label>
-        <label>Lay odds (decimal)
-          <input type="number" inputmode="decimal" id="snr-lay-odds" step="0.01" min="1.01" value="5.20" />
-        </label>
-        <label>Exchange commission (%)
-          <input type="number" inputmode="decimal" id="snr-commission" step="0.1" min="0" max="100" value="5" />
+        <label>Outcome B odds (decimal)
+          <input type="number" inputmode="decimal" id="arb-odds-b" step="0.01" min="1.01" value="2.05" />
         </label>
       </div>
-      <div class="results" id="snr-results"></div>
-    </section>
-
-    <section class="panel" id="freebet-sr" role="tabpanel">
-      <h2>// Free Bet — Stake Returned</h2>
-      <p class="hint">Less common. Your stake is included in the winnings if the bet wins.</p>
-      <div class="grid">
-        <label>Free bet amount ($)
-          <input type="number" inputmode="decimal" id="sr-stake" step="0.01" min="0" value="25" />
-        </label>
-        <label>Back odds (decimal)
-          <input type="number" inputmode="decimal" id="sr-back-odds" step="0.01" min="1.01" value="3.00" />
-        </label>
-        <label>Lay odds (decimal)
-          <input type="number" inputmode="decimal" id="sr-lay-odds" step="0.01" min="1.01" value="3.10" />
-        </label>
-        <label>Exchange commission (%)
-          <input type="number" inputmode="decimal" id="sr-commission" step="0.1" min="0" max="100" value="5" />
-        </label>
-      </div>
-      <div class="results" id="sr-results"></div>
+      <div class="results" id="arb-results"></div>
     </section>
 
     <section class="panel" id="riskfree" role="tabpanel">
