@@ -4,18 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bonus Betting Calculator</title>
-  <link rel="preload" href="fonts/orbitron-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="styles.css" />
   <script src="app.js" defer></script>
 </head>
 <body>
   <div class="grid-bg" aria-hidden="true"></div>
-  <div class="scanlines" aria-hidden="true"></div>
 
   <main class="app">
     <header class="header">
-      <h1 data-text="BONUS//BETTING_CALC">BONUS//BETTING_CALC</h1>
-      <p class="subtitle">&gt; Optimal stakes and locked-in profit for bookmaker offers_</p>
+      <p class="eyebrow">DWG. 001 &nbsp;·&nbsp; SHEET 1 OF 1</p>
+      <h1>Bonus Betting Calculator</h1>
+      <p class="subtitle">Optimal stake &amp; profit analysis — drawn to scale</p>
+      <div class="dim-rule" aria-hidden="true"></div>
     </header>
 
     <nav class="tabs" role="tablist">
@@ -25,7 +26,7 @@
     </nav>
 
     <section class="panel active" id="qualifying" role="tabpanel">
-      <h2>// Qualifying Bet</h2>
+      <h2>Qualifying Bet</h2>
       <p class="hint">Used to unlock a bonus. Both outcomes leave you with a small loss (the qualifying loss).</p>
       <div class="grid">
         <label>Back stake ($)
@@ -45,7 +46,7 @@
     </section>
 
     <section class="panel" id="arbitrage" role="tabpanel">
-      <h2>// Arbitrage</h2>
+      <h2>Arbitrage</h2>
       <p class="hint">Two-way back/back arbitrage across bookmakers. Enter total stake and the odds on each opposing outcome. If the market is mispriced, the calculator finds the stake split that locks in profit.</p>
       <div class="grid">
         <label>Total stake ($)
@@ -62,7 +63,7 @@
     </section>
 
     <section class="panel" id="riskfree" role="tabpanel">
-      <h2>// Risk-Free Bet</h2>
+      <h2>Risk-Free Bet</h2>
       <p class="hint">Bookmaker refunds your stake (cash or free bet) if the bet loses. Enter expected refund value per dollar.</p>
       <div class="grid">
         <label>Stake ($)
@@ -88,7 +89,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite">COPIED TO CLIPBOARD</div>
 
     <footer class="footer">
-      <p>&gt; LIVE_CALC // DECIMAL_ODDS // COMMISSION_ON_EXCHANGE_WINNINGS</p>
+      <p>LIVE CALC &nbsp;·&nbsp; DECIMAL ODDS &nbsp;·&nbsp; COMMISSION ON EXCHANGE WINNINGS</p>
     </footer>
   </main>
 
