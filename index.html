@@ -20,14 +20,13 @@
     </header>
 
     <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="qualifying" role="tab" aria-selected="true">Qualifying</button>
+      <button class="tab active" data-tab="qualifying" role="tab" aria-selected="true">Bonus</button>
       <button class="tab" data-tab="arbitrage" role="tab" aria-selected="false">Arbitrage</button>
-      <button class="tab" data-tab="riskfree" role="tab" aria-selected="false">Risk-Free</button>
     </nav>
 
     <section class="panel active" id="qualifying" role="tabpanel">
-      <h2>Qualifying Bet</h2>
-      <p class="hint">Used to unlock a bonus. Both outcomes leave you with a small loss (the qualifying loss).</p>
+      <h2>Bonus Bet</h2>
+      <p class="hint">Place a back bet at the bookmaker and lay it at the exchange to clear a bonus offer with a known, minimal loss on either outcome.</p>
       <div class="grid">
         <label>Back stake ($)
           <input type="number" inputmode="decimal" id="q-back-stake" step="0.01" min="0" value="50" />
@@ -60,30 +59,6 @@
         </label>
       </div>
       <div class="results" id="arb-results"></div>
-    </section>
-
-    <section class="panel" id="riskfree" role="tabpanel">
-      <h2>Risk-Free Bet</h2>
-      <p class="hint">Bookmaker refunds your stake (cash or free bet) if the bet loses. Enter expected refund value per dollar.</p>
-      <div class="grid">
-        <label>Stake ($)
-          <input type="number" inputmode="decimal" id="rf-stake" step="0.01" min="0" value="100" />
-        </label>
-        <label>Back odds (decimal)
-          <input type="number" inputmode="decimal" id="rf-back-odds" step="0.01" min="1.01" value="2.50" />
-        </label>
-        <label>Lay odds (decimal)
-          <input type="number" inputmode="decimal" id="rf-lay-odds" step="0.01" min="1.01" value="2.60" />
-        </label>
-        <label>Exchange commission (%)
-          <input type="number" inputmode="decimal" id="rf-commission" step="0.1" min="0" max="100" value="5" />
-        </label>
-        <label>Refund retention rate (0–1)
-          <input type="number" inputmode="decimal" id="rf-retention" step="0.01" min="0" max="1" value="0.70" />
-          <span class="micro">e.g. 1.0 cash refund · ~0.7 free bet (SNR)</span>
-        </label>
-      </div>
-      <div class="results" id="rf-results"></div>
     </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite">COPIED TO CLIPBOARD</div>

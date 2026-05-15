@@ -3,9 +3,8 @@ const num = (id) => parseFloat($(id).value) || 0;
 const fmt = (n) => (n >= 0 ? '$' : '-$') + Math.abs(n).toFixed(2);
 
 // Formulas (c = commission as decimal):
-//   Qualifying lay stake: (backOdds * backStake) / (layOdds - c)
-//   Risk-free lay stake:  stake * (backOdds - retention) / (layOdds - c)
-//   Arbitrage stake A:    total * (1/oddsA) / (1/oddsA + 1/oddsB)
+//   Bonus lay stake:   (backOdds * backStake) / (layOdds - c)
+//   Arbitrage stake A: total * (1/oddsA) / (1/oddsA + 1/oddsB)
 
 function row(label, value) {
   return `<div class="row"><span class="label">${label}</span><span class="value">${value}</span></div>`;
@@ -84,36 +83,9 @@ function renderArbitrage() {
   ].join('');
 }
 
-function renderRiskFree() {
-  const stake = num('rf-stake');
-  const backOdds = num('rf-back-odds');
-  const layOdds = num('rf-lay-odds');
-  const c = num('rf-commission') / 100;
-  const retention = num('rf-retention');
-
-  if (backOdds <= 1 || layOdds <= 1) return invalid('rf-results', 'Enter valid odds (&gt; 1.00)');
-
-  const layStake = (stake * (backOdds - retention)) / (layOdds - c);
-  const liab = layStake * (layOdds - 1);
-  const ifBackWins = stake * (backOdds - 1) - liab;
-  const ifLayWins = layStake * (1 - c) - stake * (1 - retention);
-  const worst = Math.min(ifBackWins, ifLayWins);
-  const ev = stake > 0 ? (worst / stake) * 100 : 0;
-
-  $('rf-results').innerHTML = [
-    copyRow('Lay stake', layStake, 'rf'),
-    row('Lay liability', fmt(liab)),
-    row('If back bet wins', fmt(ifBackWins)),
-    row('If lay bet wins (refund triggers)', fmt(ifLayWins)),
-    row('Effective return on stake', ev.toFixed(2) + '%'),
-    highlight('Guaranteed value', worst, worst >= 0)
-  ].join('');
-}
-
 function renderAll() {
   renderQualifying();
   renderArbitrage();
-  renderRiskFree();
 }
 
 let toastTimer;
