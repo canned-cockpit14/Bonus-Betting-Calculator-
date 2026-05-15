@@ -20,28 +20,32 @@
     </header>
 
     <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="qualifying" role="tab" aria-selected="true">Bonus</button>
+      <button class="tab active" data-tab="bonus" role="tab" aria-selected="true">Bonus</button>
       <button class="tab" data-tab="arbitrage" role="tab" aria-selected="false">Arbitrage</button>
     </nav>
 
-    <section class="panel active" id="qualifying" role="tabpanel">
+    <section class="panel active" id="bonus" role="tabpanel">
       <h2>Bonus Bet</h2>
-      <p class="hint">Place a back bet at the bookmaker and lay it at the exchange to clear a bonus offer with a known, minimal loss on either outcome.</p>
+      <p class="hint">Extract cash value from a bookmaker bonus (free bet, stake not returned). Back the bonus at the bookmaker, lay it at the exchange. Locks in profit regardless of outcome.</p>
       <div class="grid">
-        <label>Back stake ($)
-          <input type="number" inputmode="decimal" id="q-back-stake" step="0.01" min="0" value="50" />
+        <label>Bonus amount ($)
+          <input type="number" inputmode="decimal" id="b-bonus" step="1" min="0" max="500" value="25" />
+          <input type="range" data-sync="b-bonus" min="0" max="500" step="1" value="25" aria-label="Bonus amount slider" />
         </label>
         <label>Back odds (decimal)
-          <input type="number" inputmode="decimal" id="q-back-odds" step="0.01" min="1.01" value="2.10" />
+          <input type="number" inputmode="decimal" id="b-back-odds" step="0.01" min="1.01" max="20" value="5.00" />
+          <input type="range" data-sync="b-back-odds" min="1.01" max="20" step="0.01" value="5.00" aria-label="Back odds slider" />
         </label>
         <label>Lay odds (decimal)
-          <input type="number" inputmode="decimal" id="q-lay-odds" step="0.01" min="1.01" value="2.18" />
+          <input type="number" inputmode="decimal" id="b-lay-odds" step="0.01" min="1.01" max="20" value="5.20" />
+          <input type="range" data-sync="b-lay-odds" min="1.01" max="20" step="0.01" value="5.20" aria-label="Lay odds slider" />
         </label>
         <label>Exchange commission (%)
-          <input type="number" inputmode="decimal" id="q-commission" step="0.1" min="0" max="100" value="5" />
+          <input type="number" inputmode="decimal" id="b-commission" step="0.1" min="0" max="10" value="5" />
+          <input type="range" data-sync="b-commission" min="0" max="10" step="0.1" value="5" aria-label="Commission slider" />
         </label>
       </div>
-      <div class="results" id="q-results"></div>
+      <div class="results" id="b-results"></div>
     </section>
 
     <section class="panel" id="arbitrage" role="tabpanel">
@@ -49,13 +53,16 @@
       <p class="hint">Two-way back/back arbitrage across bookmakers. Enter total stake and the odds on each opposing outcome. If the market is mispriced, the calculator finds the stake split that locks in profit.</p>
       <div class="grid">
         <label>Total stake ($)
-          <input type="number" inputmode="decimal" id="arb-total" step="0.01" min="0" value="100" />
+          <input type="number" inputmode="decimal" id="arb-total" step="1" min="0" max="1000" value="100" />
+          <input type="range" data-sync="arb-total" min="0" max="1000" step="1" value="100" aria-label="Total stake slider" />
         </label>
         <label>Outcome A odds (decimal)
-          <input type="number" inputmode="decimal" id="arb-odds-a" step="0.01" min="1.01" value="2.10" />
+          <input type="number" inputmode="decimal" id="arb-odds-a" step="0.01" min="1.01" max="20" value="2.10" />
+          <input type="range" data-sync="arb-odds-a" min="1.01" max="20" step="0.01" value="2.10" aria-label="Outcome A odds slider" />
         </label>
         <label>Outcome B odds (decimal)
-          <input type="number" inputmode="decimal" id="arb-odds-b" step="0.01" min="1.01" value="2.05" />
+          <input type="number" inputmode="decimal" id="arb-odds-b" step="0.01" min="1.01" max="20" value="2.05" />
+          <input type="range" data-sync="arb-odds-b" min="1.01" max="20" step="0.01" value="2.05" aria-label="Outcome B odds slider" />
         </label>
       </div>
       <div class="results" id="arb-results"></div>

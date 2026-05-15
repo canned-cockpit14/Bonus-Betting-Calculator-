@@ -3,14 +3,14 @@ const num = (id) => parseFloat($(id).value) || 0;
 const fmt = (n) => (n >= 0 ? '$' : '-$') + Math.abs(n).toFixed(2);
 
 // Formulas (c = commission as decimal):
-//   Bonus lay stake:   (backOdds * backStake) / (layOdds - c)
-//   Arbitrage stake A: total * (1/oddsA) / (1/oddsA + 1/oddsB)
+//   Bonus (SNR free bet) lay stake: (backOdds - 1) * bonus / (layOdds - c)
+//   Arbitrage stake A:              total * (1/oddsA) / (1/oddsA + 1/oddsB)
 
 function row(label, value) {
   return `<div class="row"><span class="label">${label}</span><span class="value">${value}</span></div>`;
 }
 
-function copyRow(label, value, idSuffix) {
+function copyRow(label, value) {
   return `
     <div class="row lay-stake-row">
       <span class="label">▶ ${label}</span>
@@ -30,26 +30,28 @@ function invalid(targetId, msg) {
   $(targetId).innerHTML = `<div class="row"><span class="label">⚠ ${msg}</span></div>`;
 }
 
-function renderQualifying() {
-  const stake = num('q-back-stake');
-  const backOdds = num('q-back-odds');
-  const layOdds = num('q-lay-odds');
-  const c = num('q-commission') / 100;
+function renderBonus() {
+  const bonus = num('b-bonus');
+  const backOdds = num('b-back-odds');
+  const layOdds = num('b-lay-odds');
+  const c = num('b-commission') / 100;
 
-  if (backOdds <= 1 || layOdds <= 1) return invalid('q-results', 'Enter valid odds (&gt; 1.00)');
+  if (backOdds <= 1 || layOdds <= 1) return invalid('b-results', 'Enter valid odds (&gt; 1.00)');
 
-  const layStake = (backOdds * stake) / (layOdds - c);
+  const layStake = ((backOdds - 1) * bonus) / (layOdds - c);
   const liab = layStake * (layOdds - 1);
-  const ifBackWins = stake * (backOdds - 1) - liab;
-  const ifLayWins = layStake * (1 - c) - stake;
+  const ifBackWins = bonus * (backOdds - 1) - liab;
+  const ifLayWins = layStake * (1 - c);
   const worst = Math.min(ifBackWins, ifLayWins);
+  const retention = bonus > 0 ? (worst / bonus) * 100 : 0;
 
-  $('q-results').innerHTML = [
-    copyRow('Lay stake', layStake, 'q'),
+  $('b-results').innerHTML = [
+    copyRow('Lay stake', layStake),
     row('Lay liability', fmt(liab)),
     row('If back bet wins', fmt(ifBackWins)),
     row('If lay bet wins', fmt(ifLayWins)),
-    highlight('Worst-case result', worst, worst >= 0)
+    row('Retention rate', retention.toFixed(2) + '%'),
+    highlight('Locked-in profit', worst, worst >= 0)
   ].join('');
 }
 
@@ -75,8 +77,8 @@ function renderArbitrage() {
 
   $('arb-results').innerHTML = [
     row('Implied market %', `${(market * 100).toFixed(2)}% &nbsp;<span class="tag ${isArb ? 'tag-good' : 'tag-bad'}">${statusLabel}</span>`),
-    copyRow('Stake on A', stakeA, 'arb-a'),
-    copyRow('Stake on B', stakeB, 'arb-b'),
+    copyRow('Stake on A', stakeA),
+    copyRow('Stake on B', stakeB),
     row('Guaranteed payout', fmt(payout)),
     row('Yield', yieldPct.toFixed(2) + '%'),
     highlight('Guaranteed profit', profit, profit >= 0)
@@ -84,7 +86,7 @@ function renderArbitrage() {
 }
 
 function renderAll() {
-  renderQualifying();
+  renderBonus();
   renderArbitrage();
 }
 
@@ -139,8 +141,20 @@ document.querySelectorAll('.tab').forEach((tab) => {
   });
 });
 
-document.querySelectorAll('input[type="number"]').forEach((input) => {
-  input.addEventListener('input', renderAll);
+// Bidirectional sync: each range slider mirrors a number input by id.
+// Programmatic .value writes don't fire 'input' events, so there's no
+// feedback loop. Both controls trigger renderAll.
+document.querySelectorAll('input[type="range"][data-sync]').forEach((slider) => {
+  const target = $(slider.dataset.sync);
+  if (!target) return;
+  slider.addEventListener('input', () => {
+    target.value = slider.value;
+    renderAll();
+  });
+  target.addEventListener('input', () => {
+    slider.value = target.value;
+    renderAll();
+  });
 });
 
 renderAll();
