@@ -2,31 +2,57 @@ const $ = (id) => document.getElementById(id);
 const num = (id) => parseFloat($(id).value) || 0;
 const fmt = (n) => (n >= 0 ? '$' : '-$') + Math.abs(n).toFixed(2);
 
-// Lay stake formulas (c = commission as decimal, e.g. 0.05):
+let roundMode = 'nearest';
+
+// Lay stake formulas (c = commission as decimal):
 //   Qualifying / SR free bet: layStake = (backOdds * backStake) / (layOdds - c)
 //   SNR free bet:             layStake = (backOdds - 1) * freeBetStake / (layOdds - c)
-//
-// Liability = layStake * (layOdds - 1)
+//   Risk-free:                layStake = stake * (backOdds - retention) / (layOdds - c)
 
 function layStakeQualifying(stake, backOdds, layOdds, c) {
   return (backOdds * stake) / (layOdds - c);
 }
-
 function layStakeSNR(stake, backOdds, layOdds, c) {
   return ((backOdds - 1) * stake) / (layOdds - c);
 }
+function layStakeRiskFree(stake, backOdds, layOdds, c, retention) {
+  return (stake * (backOdds - retention)) / (layOdds - c);
+}
 
-function liability(layStake, layOdds) {
-  return layStake * (layOdds - 1);
+function applyRound(exact) {
+  if (roundMode === 'up') return Math.ceil(exact * 100) / 100;
+  if (roundMode === 'down') return Math.floor(exact * 100) / 100;
+  if (roundMode === 'nearest') return Math.round(exact * 100) / 100;
+  return exact; // 'none' / exact
 }
 
 function row(label, value) {
   return `<div class="row"><span class="label">${label}</span><span class="value">${value}</span></div>`;
 }
 
+function layStakeRow(exact, rounded, idSuffix) {
+  const showExact = roundMode !== 'none' && Math.abs(exact - rounded) > 0.0001;
+  const noteHTML = showExact
+    ? `<span class="exact-note">exact ${exact.toFixed(4)}</span>`
+    : '';
+  return `
+    <div class="row lay-stake-row">
+      <span class="label">▶ Lay stake</span>
+      <div class="lay-stake-display">
+        ${noteHTML}
+        <span class="lay-stake-value" id="lay-value-${idSuffix}">${fmt(rounded)}</span>
+        <button class="copy-btn" data-copy="${rounded.toFixed(2)}" data-id="${idSuffix}">Copy</button>
+      </div>
+    </div>`;
+}
+
 function highlight(label, value, isProfit) {
   const cls = isProfit ? 'profit' : 'loss';
   return `<div class="highlight ${cls}"><span class="label">${label}</span><span class="value">${fmt(value)}</span></div>`;
+}
+
+function invalidOdds(targetId) {
+  $(targetId).innerHTML = '<div class="row"><span class="label">⚠ Enter valid odds (&gt; 1.00)</span></div>';
 }
 
 function renderQualifying() {
@@ -35,26 +61,22 @@ function renderQualifying() {
   const layOdds = num('q-lay-odds');
   const c = num('q-commission') / 100;
 
-  if (backOdds <= 1 || layOdds <= 1) {
-    $('q-results').innerHTML = '<div class="row"><span class="label">Enter valid odds (> 1.00)</span></div>';
-    return;
-  }
+  if (backOdds <= 1 || layOdds <= 1) return invalidOdds('q-results');
 
-  const layStake = layStakeQualifying(stake, backOdds, layOdds, c);
-  const liab = liability(layStake, layOdds);
+  const exactLay = layStakeQualifying(stake, backOdds, layOdds, c);
+  const layStake = applyRound(exactLay);
+  const liab = layStake * (layOdds - 1);
 
-  // If back wins: profit = stake*(backOdds-1) - liability
-  // If lay wins:  profit = layStake*(1-c) - stake
   const ifBackWins = stake * (backOdds - 1) - liab;
   const ifLayWins = layStake * (1 - c) - stake;
-  const result = Math.min(ifBackWins, ifLayWins);
+  const worst = Math.min(ifBackWins, ifLayWins);
 
   $('q-results').innerHTML = [
-    row('Lay stake', fmt(layStake)),
+    layStakeRow(exactLay, layStake, 'q'),
     row('Lay liability', fmt(liab)),
     row('If back bet wins', fmt(ifBackWins)),
     row('If lay bet wins', fmt(ifLayWins)),
-    highlight('Qualifying loss / profit', result, result >= 0)
+    highlight('Worst-case result', worst, worst >= 0)
   ].join('');
 }
 
@@ -64,28 +86,24 @@ function renderSNR() {
   const layOdds = num('snr-lay-odds');
   const c = num('snr-commission') / 100;
 
-  if (backOdds <= 1 || layOdds <= 1) {
-    $('snr-results').innerHTML = '<div class="row"><span class="label">Enter valid odds (> 1.00)</span></div>';
-    return;
-  }
+  if (backOdds <= 1 || layOdds <= 1) return invalidOdds('snr-results');
 
-  const layStake = layStakeSNR(stake, backOdds, layOdds, c);
-  const liab = liability(layStake, layOdds);
+  const exactLay = layStakeSNR(stake, backOdds, layOdds, c);
+  const layStake = applyRound(exactLay);
+  const liab = layStake * (layOdds - 1);
 
-  // SNR: stake not returned. Back wins -> profit = stake*(backOdds-1) - liability
-  //                          Lay wins  -> profit = layStake*(1-c) (no qualifying stake outlay)
   const ifBackWins = stake * (backOdds - 1) - liab;
   const ifLayWins = layStake * (1 - c);
-  const result = Math.min(ifBackWins, ifLayWins);
-  const retention = stake > 0 ? (result / stake) * 100 : 0;
+  const worst = Math.min(ifBackWins, ifLayWins);
+  const retention = stake > 0 ? (worst / stake) * 100 : 0;
 
   $('snr-results').innerHTML = [
-    row('Lay stake', fmt(layStake)),
+    layStakeRow(exactLay, layStake, 'snr'),
     row('Lay liability', fmt(liab)),
     row('If back bet wins', fmt(ifBackWins)),
     row('If lay bet wins', fmt(ifLayWins)),
     row('Retention rate', retention.toFixed(2) + '%'),
-    highlight('Locked-in profit', result, result >= 0)
+    highlight('Locked-in profit', worst, worst >= 0)
   ].join('');
 }
 
@@ -95,29 +113,24 @@ function renderSR() {
   const layOdds = num('sr-lay-odds');
   const c = num('sr-commission') / 100;
 
-  if (backOdds <= 1 || layOdds <= 1) {
-    $('sr-results').innerHTML = '<div class="row"><span class="label">Enter valid odds (> 1.00)</span></div>';
-    return;
-  }
+  if (backOdds <= 1 || layOdds <= 1) return invalidOdds('sr-results');
 
-  // SR free bet: stake IS returned, so works like a qualifying bet but you keep all winnings.
-  const layStake = layStakeQualifying(stake, backOdds, layOdds, c);
-  const liab = liability(layStake, layOdds);
+  const exactLay = layStakeQualifying(stake, backOdds, layOdds, c);
+  const layStake = applyRound(exactLay);
+  const liab = layStake * (layOdds - 1);
 
-  // Back wins -> profit = stake*backOdds - liability  (full winnings, no real stake outlay)
-  // Lay wins  -> profit = layStake*(1-c)
   const ifBackWins = stake * backOdds - liab;
   const ifLayWins = layStake * (1 - c);
-  const result = Math.min(ifBackWins, ifLayWins);
-  const retention = stake > 0 ? (result / stake) * 100 : 0;
+  const worst = Math.min(ifBackWins, ifLayWins);
+  const retention = stake > 0 ? (worst / stake) * 100 : 0;
 
   $('sr-results').innerHTML = [
-    row('Lay stake', fmt(layStake)),
+    layStakeRow(exactLay, layStake, 'sr'),
     row('Lay liability', fmt(liab)),
     row('If back bet wins', fmt(ifBackWins)),
     row('If lay bet wins', fmt(ifLayWins)),
     row('Retention rate', retention.toFixed(2) + '%'),
-    highlight('Locked-in profit', result, result >= 0)
+    highlight('Locked-in profit', worst, worst >= 0)
   ].join('');
 }
 
@@ -128,31 +141,24 @@ function renderRiskFree() {
   const c = num('rf-commission') / 100;
   const retention = num('rf-retention');
 
-  if (backOdds <= 1 || layOdds <= 1) {
-    $('rf-results').innerHTML = '<div class="row"><span class="label">Enter valid odds (> 1.00)</span></div>';
-    return;
-  }
+  if (backOdds <= 1 || layOdds <= 1) return invalidOdds('rf-results');
 
-  // Risk-free: bookie refunds stake (in some form) if back loses.
-  // Optimal lay stake balances expected outcomes:
-  //   layStake = stake * (backOdds - retention) / (layOdds - c)
-  // Back wins: profit = stake*(backOdds-1) - liability
-  // Lay wins (back loses): profit = layStake*(1-c) - stake + stake*retention
-  //                                = layStake*(1-c) - stake*(1-retention)
-  const layStake = (stake * (backOdds - retention)) / (layOdds - c);
-  const liab = liability(layStake, layOdds);
+  const exactLay = layStakeRiskFree(stake, backOdds, layOdds, c, retention);
+  const layStake = applyRound(exactLay);
+  const liab = layStake * (layOdds - 1);
+
   const ifBackWins = stake * (backOdds - 1) - liab;
   const ifLayWins = layStake * (1 - c) - stake * (1 - retention);
-  const guaranteed = Math.min(ifBackWins, ifLayWins);
-  const ev = stake > 0 ? (guaranteed / stake) * 100 : 0;
+  const worst = Math.min(ifBackWins, ifLayWins);
+  const ev = stake > 0 ? (worst / stake) * 100 : 0;
 
   $('rf-results').innerHTML = [
-    row('Lay stake', fmt(layStake)),
+    layStakeRow(exactLay, layStake, 'rf'),
     row('Lay liability', fmt(liab)),
     row('If back bet wins', fmt(ifBackWins)),
     row('If lay bet wins (refund triggers)', fmt(ifLayWins)),
     row('Effective return on stake', ev.toFixed(2) + '%'),
-    highlight('Guaranteed value', guaranteed, guaranteed >= 0)
+    highlight('Guaranteed value', worst, worst >= 0)
   ].join('');
 }
 
@@ -163,6 +169,47 @@ function renderAll() {
   renderRiskFree();
 }
 
+let toastTimer;
+function showToast(msg) {
+  const toast = $('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+async function copyValue(value, btn) {
+  try {
+    await navigator.clipboard.writeText(value);
+  } catch {
+    // Fallback for non-secure contexts
+    const ta = document.createElement('textarea');
+    ta.value = value;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch {}
+    document.body.removeChild(ta);
+  }
+  btn.classList.add('copied');
+  const original = btn.textContent;
+  btn.textContent = '✓ Copied';
+  showToast(`COPIED :: ${value}`);
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.textContent = original;
+  }, 1200);
+}
+
+// Event delegation for copy buttons (results re-render on each input change).
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.copy-btn');
+  if (!btn) return;
+  copyValue(btn.dataset.copy, btn);
+});
+
+// Tabs
 document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach((t) => {
@@ -176,6 +223,21 @@ document.querySelectorAll('.tab').forEach((tab) => {
   });
 });
 
+// Rounding toggle
+document.querySelectorAll('.round-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.round-btn').forEach((b) => {
+      b.classList.remove('active');
+      b.setAttribute('aria-checked', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-checked', 'true');
+    roundMode = btn.dataset.round;
+    renderAll();
+  });
+});
+
+// Inputs
 document.querySelectorAll('input[type="number"]').forEach((input) => {
   input.addEventListener('input', renderAll);
 });
